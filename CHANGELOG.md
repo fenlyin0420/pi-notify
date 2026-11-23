@@ -1,6 +1,12 @@
 # Changelog
 
-## [Unreleased]
+## [0.2.0]
+
+### Added
+
+- `title` channel: a 🔔 in front of the terminal tab title while pi waits, so a background tab says
+  what happened without a sound. Cleared when the tab reports focus again, when any key is pressed,
+  when the dialog closes, or when a session starts; it is part of the platform defaults.
 
 ## [0.1.0]
 

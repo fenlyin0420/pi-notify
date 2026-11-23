@@ -1,2 +1,7 @@
 node_modules/
 *.tgz
+
+# Local agent state: project memory and the dev-only package link.
+.agents/
+.pi/
+

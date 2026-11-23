@@ -61,7 +61,7 @@ function normalizeChannels(value: unknown): ChannelSpec[] | undefined {
 }
 
 function normalizeChannel(value: unknown): ChannelSpec | undefined {
-	if (value === "bell" || value === "osc9" || value === "osc777") return value;
+	if (value === "bell" || value === "osc9" || value === "osc777" || value === "title") return value;
 	if (!isRecord(value)) return undefined;
 	if (value.type !== "command") return undefined;
 	const command = typeof value.command === "string" ? value.command.trim() : "";

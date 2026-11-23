@@ -15,15 +15,17 @@ describe("defaultChannels", () => {
 				command:
 					'powershell -NoProfile -NonInteractive -c "(New-Object Media.SoundPlayer \'C:\\pi\\notify.wav\').PlaySync()"',
 			},
+			"title",
 		]);
 		assert.deepEqual(defaultChannels("darwin", "/pi/notify.wav"), [
 			{ type: "command", command: "afplay '/pi/notify.wav'" },
+			"title",
 		]);
 	});
 
 	it("falls back to BEL where no player is guaranteed", () => {
-		assert.deepEqual(defaultChannels("linux", "/pi/notify.wav"), ["bell"]);
-		assert.deepEqual(defaultChannels("freebsd", "/pi/notify.wav"), ["bell"]);
+		assert.deepEqual(defaultChannels("linux", "/pi/notify.wav"), ["bell", "title"]);
+		assert.deepEqual(defaultChannels("freebsd", "/pi/notify.wav"), ["bell", "title"]);
 	});
 
 	it("doubles single quotes so a path cannot end the PowerShell literal", () => {
@@ -46,11 +48,18 @@ describe("normalizeNotifyConfig", () => {
 	it("keeps valid channels and drops invalid ones", () => {
 		const config = normalizeNotifyConfig(
 			{
-				channels: ["bell", "osc9", "loudspeaker", { type: "command", command: "  " }, { type: "command", command: "aplay x.wav" }],
+				channels: [
+					"bell",
+					"osc9",
+					"title",
+					"loudspeaker",
+					{ type: "command", command: "  " },
+					{ type: "command", command: "aplay x.wav" },
+				],
 			},
 			[...FALLBACK],
 		);
-		assert.deepEqual(config.channels, ["bell", "osc9", { type: "command", command: "aplay x.wav" }]);
+		assert.deepEqual(config.channels, ["bell", "osc9", "title", { type: "command", command: "aplay x.wav" }]);
 	});
 
 	it("falls back to the platform default when every channel is invalid", () => {

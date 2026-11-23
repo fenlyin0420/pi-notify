@@ -4,10 +4,18 @@ import { spawn } from "node:child_process";
 import type { ChannelRuntime } from "./channels.ts";
 import type { NotifyPayload } from "./config/types.ts";
 
-export function createChannelRuntime(): ChannelRuntime {
+export interface ChannelRuntimeOptions {
+	/** Called for the `title` channel; injected so the runtime never has to know pi's UI context. */
+	markTitle?: () => void;
+}
+
+export function createChannelRuntime(options: ChannelRuntimeOptions = {}): ChannelRuntime {
 	return {
 		write(text) {
 			process.stdout.write(text);
+		},
+		markTitle() {
+			options.markTitle?.();
 		},
 		play(command, payload) {
 			const child = spawn(command, {

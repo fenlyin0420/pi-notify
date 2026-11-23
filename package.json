@@ -1,6 +1,6 @@
 {
 	"name": "@fenlyin/pi-notify",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"description": "Pi package that plays a configurable sound when a dialog waits for the user or an agent run settles.",
 	"type": "module",
 	"license": "MIT",

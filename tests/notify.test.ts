@@ -19,19 +19,24 @@ function config(overrides: Partial<NotifyConfig> = {}): NotifyConfig {
 	};
 }
 
-function recordingRuntime(): ChannelRuntime & { writes: string[]; plays: string[] } {
+function recordingRuntime(): ChannelRuntime & { writes: string[]; plays: string[]; marks: number } {
 	const writes: string[] = [];
 	const plays: string[] = [];
-	return {
+	const runtime = {
 		writes,
 		plays,
-		write(text) {
+		marks: 0,
+		write(text: string) {
 			writes.push(text);
 		},
-		play(command) {
+		play(command: string) {
 			plays.push(command);
 		},
+		markTitle() {
+			runtime.marks += 1;
+		},
 	};
+	return runtime;
 }
 
 describe("payloadForReason", () => {
@@ -63,6 +68,13 @@ describe("notifyForReason", () => {
 		assert.deepEqual(runtime.writes, ["\u0007"]);
 	});
 
+	it("marks the tab alongside the sound", () => {
+		const runtime = recordingRuntime();
+		notifyForReason({ kind: "idle" }, config({ channels: ["bell", "title"] }), runtime);
+		assert.deepEqual(runtime.writes, ["\u0007"]);
+		assert.equal(runtime.marks, 1);
+	});
+
 	it("prefers the per-event channels", () => {
 		const runtime = recordingRuntime();
 		notifyForReason(
@@ -83,6 +95,7 @@ describe("notifyForReason", () => {
 			notifyForReason({ kind: "dialog", promptKind: "confirm" }, candidate, runtime);
 			assert.deepEqual(runtime.writes, []);
 			assert.deepEqual(runtime.plays, []);
+			assert.equal(runtime.marks, 0);
 		}
 	});
 });
@@ -95,7 +108,7 @@ describe("createNotifyConfigStore", () => {
 			soundPath: "/pkg/notify.wav",
 			readFile: () => undefined,
 		});
-		assert.deepEqual(store.get().channels, ["bell"]);
+		assert.deepEqual(store.get().channels, ["bell", "title"]);
 	});
 
 	it("reads JSON, normalizes it, and caches until reload", () => {
@@ -125,7 +138,10 @@ describe("createNotifyConfigStore", () => {
 				soundPath: "/pkg/notify.wav",
 				readFile: () => content,
 			});
-			assert.deepEqual(store.get().channels, [{ type: "command", command: "afplay '/pkg/notify.wav'" }]);
+			assert.deepEqual(store.get().channels, [
+				{ type: "command", command: "afplay '/pkg/notify.wav'" },
+				"title",
+			]);
 		}
 	});
 });

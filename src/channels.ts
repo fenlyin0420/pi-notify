@@ -2,10 +2,12 @@
 
 import type { ChannelSpec, NotifyPayload } from "./config/types.ts";
 
-/** The two side effects a channel needs, injected so tests never touch a terminal or a process. */
+/** The side effects a channel needs, injected so tests never touch a terminal or a process. */
 export interface ChannelRuntime {
 	write(text: string): void;
 	play(command: string, payload: NotifyPayload): void;
+	/** Prefix the terminal tab title; the notify layer clears it again when the user comes back. */
+	markTitle(): void;
 }
 
 /** Run every configured channel in order. A failing channel is dropped: it is best effort. */
@@ -18,6 +20,8 @@ export function playChannels(channels: ChannelSpec[], payload: NotifyPayload, ru
 				runtime.write(`\x1b]9;${printable(payload.message)}\x07`);
 			} else if (channel === "osc777") {
 				runtime.write(`\x1b]777;notify;${oscField(payload.title)};${oscField(payload.message)}\x07`);
+			} else if (channel === "title") {
+				runtime.markTitle();
 			} else {
 				runtime.play(channel.command, payload);
 			}

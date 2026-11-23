@@ -12,19 +12,28 @@ const PAYLOAD: NotifyPayload = {
 	message: "Waiting for input: Allow write?",
 };
 
-function recordingRuntime(): ChannelRuntime & { writes: string[]; plays: Array<{ command: string; payload: NotifyPayload }> } {
+function recordingRuntime(): ChannelRuntime & {
+	writes: string[];
+	plays: Array<{ command: string; payload: NotifyPayload }>;
+	marks: number;
+} {
 	const writes: string[] = [];
 	const plays: Array<{ command: string; payload: NotifyPayload }> = [];
-	return {
+	const runtime = {
 		writes,
 		plays,
-		write(text) {
+		marks: 0,
+		write(text: string) {
 			writes.push(text);
 		},
-		play(command, payload) {
+		play(command: string, payload: NotifyPayload) {
 			plays.push({ command, payload });
 		},
+		markTitle() {
+			runtime.marks += 1;
+		},
 	};
+	return runtime;
 }
 
 describe("playChannels", () => {
@@ -53,6 +62,13 @@ describe("playChannels", () => {
 		assert.deepEqual(runtime.plays, [{ command: "play a.wav", payload: PAYLOAD }]);
 	});
 
+	it("marks the tab title for the title channel without writing to stdout", () => {
+		const runtime = recordingRuntime();
+		playChannels(["title"], PAYLOAD, runtime);
+		assert.equal(runtime.marks, 1);
+		assert.deepEqual(runtime.writes, []);
+	});
+
 	it("strips control characters and separators from OSC text", () => {
 		const runtime = recordingRuntime();
 		playChannels(["osc777"], { ...PAYLOAD, title: "a;b", message: "line\none\u0007two" }, runtime);
@@ -67,6 +83,9 @@ describe("playChannels", () => {
 			},
 			play(command) {
 				writes.push(command);
+			},
+			markTitle() {
+				throw new Error("no terminal");
 			},
 		};
 		playChannels(["bell", { type: "command", command: "play a.wav" }], PAYLOAD, runtime);

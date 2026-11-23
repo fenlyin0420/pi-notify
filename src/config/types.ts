@@ -1,7 +1,7 @@
 /** Config vocabulary: what a notification is made of, which events fire it, and the file shape. */
 
-/** One way to make a sound: a raw terminal sequence or a shell command. */
-export type ChannelSpec = "bell" | "osc9" | "osc777" | { type: "command"; command: string };
+/** One way to signal: a raw terminal sequence, the tab-title mark, or a shell command. */
+export type ChannelSpec = "bell" | "osc9" | "osc777" | "title" | { type: "command"; command: string };
 
 /** Events that can raise a notification. */
 export type NotifyEventName = "dialog" | "idle";
